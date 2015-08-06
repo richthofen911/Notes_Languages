@@ -1,0 +1,83 @@
+A balanced attitude for Scala programmers：
+Prefer vals, immutable objects, and methods without side effects.
+Reach for them first. Use var s, mutable objects, and methods with side effects when you have a specific need and
+justification for them.
+
+::Iterate with foreach and for
+    foreach用法:
+        args.foreach(arg => println(arg))
+        
+            If a function literal consists of one statement that takes a single argument, you need not explicitly 
+            name and specify the argument. 11 Thus, the following code also works:
+      
+        args.foreach(println)
+    
+    for用法:
+      for (arg <- args)
+        println(arg)
+        
+      for(i <- 0 to 2)
+        print(args(i))
+        
+::Array
+   长度不可变
+   create:   val numNames = Array("one", "two", "three")
+   修改某个元素:  numNames(1) = "four"
+   
+::List
+  Scala’s List, scala.List, differs from Java’s java.util.List in that Scala Lists are always immutable whereas 
+  Java List s can be mutable). More generally, Scala’s List is designed to enable a functional style of programming
+  详见 http://scalagroup.group.iteye.com/group/topic/28919
+  
+  create:   val oneTwoThree = List(1, 2, 3)
+  
+  Because List s are immutable, they behave a bit like Java strings: when you call a method on a list that might 
+  seem by its name to imply the list will mutate, it instead creates and returns a new list with the new value. 
+  For example, List has a method named ‘ ::: ’ for list concatenation, Here’s how you use it:
+    val oneTwo = List(1, 2)
+    val threeFour = List(3, 4)
+    val oneTwoThreeFour = oneTwo ::: threeFour
+    println(oneTwo +" and "+ threeFour +" were not mutated.")
+    println("Thus, "+ oneTwoThreeFour +" is a new list.")
+    
+  The most common operator you’ll use with lists is ‘ :: ’, which is pronounced “cons.” Cons prepends a new element 
+  to the beginning of an existing list, and returns the resulting list. For example:
+    val twoThree = List(2, 3)
+    val oneTwoThree = 1 :: twoThree
+    println(oneTwoThree)
+    以及
+    val oneTwoThree = 1 :: 2 :: 3 :: Nil
+    println(oneTwoThree)
+  注意  ‘::’ is a method of its right operand
+    通常If a method name ends in a colon, the method is invoked on the right operand 比如'::'
+    而invoked on the left operand情况是 .*， 比如 '+'是省略的写法，完整写法应该是leftOperand.+
+  特别说明
+    Why not append to lists?
+    Class List does offer an “append” operation —it’s written :+ and is explained in Chapter 24— but this operation
+    is rarely used, because the time it takes to append to a list grows linearly with the size of the list, whereas
+    prepending with :: takes constant time.
+    
+::tuple
+  Like lists, tuples are immutable, but unlike lists, tuples can contain different types of elements. Tuples are 
+  very useful, for example, if you need to return multiple objects from a method. Whereas in Java you would often 
+  create a JavaBean-like class to hold the multiple return values, in Scala you can simply return a tuple.
+  
+  create: val pair = (99, "Luftballons")
+  access: println(pair._1)
+          println(pair._2)
+   
+  特别说明 
+    You may be wondering why you can’t access the elements of a tuple like the elements of a list, for example, 
+    with “ pair(0) ”. The reason is that a list’s apply method always returns the same type, but each element of 
+    a tuple may be a different type: _1 can have one result type, _2 another, and so on. These _N numbers are 
+    one-based, instead of zero-based, because starting with 1 is a tradition set by other languages with statically
+    typed tuples, such as Haskell and ML.
+
+:: Sets and Maps
+  书 p.91
+  
+  
+  
+  
+  
+  
