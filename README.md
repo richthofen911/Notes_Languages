@@ -1,3 +1,3 @@
-## Notes_Languages
+## Notes_Languages_Scala
 
-see different branches
+This branch is the note for Scala
