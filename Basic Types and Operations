@@ -1,0 +1,7 @@
+::How Scala’s == differs from Java’s
+    In Java, you can use == to compare both primitive and reference types.
+    On primitive types, Java’s == compares value equality, as in Scala. On reference types, however, 
+    Java’s == compares reference equality, which means the two variables point to the same object on the JVM’s heap.
+    Scala provides a facility for comparing reference equality, as well, under the name eq. However, eq and its 
+    opposite, ne, only apply to objects that directly map to Java objects. The full details about eq and ne are given
+    in Sections 11.1 and 11.2. Also, see Chapter 30 on how to write a good equals method.
