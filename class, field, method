@@ -1,0 +1,66 @@
+::create class
+  class ChecksumAccumulator {
+    var sum = 0
+  }
+
+::instantiate
+  val acc = new ChecksumAccumulator
+  
+  注意：如果之后再用acc = new ChecksumAccumulator，即再给acc赋新值，则非法，因为acc是val，不可变
+
+::****
+  One important characteristic of method parameters in Scala is that they are vals, not vars. If you attempt to 
+  reassign a parameter inside a method in Scala, therefore, it won’t compile. Example
+    def add(b: Byte): Unit = {
+      b = 1  // This won’t compile, because b is a val
+      sum += b
+    }
+  
+  In the absence of any explicit return statement, a Scala method returns the last value computed by the method  
+    example: def checksum(): Int = ~(sum & 0xFF) + 1
+    会返回最后的checksum值
+    
+  The recommended style for methods is in fact to avoid having explicit, and especially multiple, return statements. 
+  Instead, think of each method as an expression that yields one value, which is returned.
+
+::singleton objects
+  one way in which Scala is more object-oriented than Java is that classes in Scala cannot have static members. 
+  Instead, Scala has singleton objects. A singleton object definition looks like a class definition, except instead
+  of the keyword class you use the keyword object. Example:
+    object ChecksumAccumulator {
+      private val cache = Map[String, Int]()
+      def calculate(s: String): Int =
+      if (cache.contains(s))
+        cache(s)
+      else {
+        val acc = new ChecksumAccumulator
+        for (c <- s)
+          acc.add(c.toByte)
+        val cs = acc.checksum()
+        cache += (s -> cs)
+        cs
+      }
+    }
+  
+  When a singleton object shares the same name with a class, it is called that class’s companion object. You must 
+  define both the class and its companion object in the same source file. The class is called the companion class 
+  of the singleton object. A class and its companion object can access each other’s private members.
+  A singleton object is more than a holder of static methods, however. It is a first-class object.
+  Defining a singleton object doesn’t define a type (at the Scala level of abstraction). Given just a definition of
+  object ChecksumAccumulator , you can’t make a variable of type ChecksumAccumulator . Rather, the type named 
+  ChecksumAccumulator is defined by the singleton object’s companion class. However, singleton objects extend a 
+  superclass and can mix in traits.
+  A singleton object that does not share the same name with a companion class is called a standalone object. 
+  You can use standalone objects for many purposes, including collecting related utility methods together, or 
+  defining an entry point to a Scala application.
+  To run a Scala program, you must supply the name of a standalone singleton object with a main method that takes 
+  one parameter, an Array[String] , and has a result type of Unit . Any standalone object with a main method of
+  the proper signature can be used as the entry point into an application.
+  import ChecksumAccumulator.calculate
+    object Summer {
+      def main(args: Array[String]) {
+        for (arg <- args)
+          println(arg +": "+ calculate(arg))
+      }
+    }
+  
