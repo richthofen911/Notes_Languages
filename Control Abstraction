@@ -1,0 +1,33 @@
+Scala doesn’t have many built-in control abstractions, because it gives you the ability to create your own. This part
+hows to apply function values to create new control abstractions, including currying and by-name parameters
+
+::high-order function
+  serveral usages/important features
+    1. reduce code duplication
+    2. put high-order function in an API itselft to make client code more concise
+
+::Reducing code duplication
+  higher-order functions----------functions that take functions as parameters—give you extra opportunities to
+  condense and simplify code
+  书p.208
+  
+::Simplifying client code
+  Another important use of higher-order functions is to put them in an API itself to make client code more concise
+  A good example is provided by the special-purpose looping methods of Scala’s collection types
+  书 p.211
+  
+::Curring (柯里化）    http://book.2cto.com/201211/9320.html
+  A curried function is applied to multiple argument lists, instead of just one
+  example:
+    //common style
+    def plainOldSum(x: Int, y: Int) = x + y   
+    plainOldSum(1, 2)
+    
+    //curried style, Instead of a list of two Int parameters, apply the func to two lists of one Int parameter each.
+    def curriedSum(x: Int)(y: Int) = x + y   
+    curriedSum(1)(2)
+    
+    What’s happening here is that when you invoke curriedSum , you actually get two traditional function invocations
+    back to back. The first function invocation takes a single Int parameter named x , and returns a function value
+    for the second function. This second function takes the Int parameter y.
+    
