@@ -1,0 +1,250 @@
+::if expressions
+  imperative style:
+  
+    var filename = "default.txt"
+    if (!args.isEmpty)
+      filename = args(0)
+  
+  functional style:    
+    
+    val filename =
+      if (!args.isEmpty) args(0)
+      else "default.txt"
+
+::while loops
+  def gcdLoop(x: Long, y: Long): Long = {
+    var a = x
+    var b = y
+    while (a != 0) {
+      val temp = a
+      a = b % a
+      b = temp
+    }
+    b
+  }
+  
+  do-while
+  do {
+    line = readLine()
+    println("Read: "+ line)
+  } while (line != "")
+  
+  The while and do-while constructs are called “loops,” not expressions, because they don’t result in an interesting
+  value. The type of the result is Unit . It turns out that a value (and in fact, only one value) exists whose type
+  is Unit . It is called the unit value and is written () . The existence of () is how Scala’s Unit differs from 
+  Java’s void. Example:
+    scala> def greet() { println("hi") }
+    greet: ()Unit
+    scala> greet() == ()
+    hi
+    res0: Boolean = true
+  Because no equals sign precedes its body, greet is defined to be a procedure with a result type of Unit. Therefore
+  greet returns the unit value, (). This is confirmed in the next line: comparing the greet ’s result for equality
+  with the unit value, () , yields true.
+    One other construct that results in the unit value, which is relevant here, is reassignment to var s. For 
+  example, were you to attempt to read lines in Scala using the following while loop idiom from Java (and C and 
+  C++), you’ll run into trouble:
+  
+    var line = ""
+    while ((line = readLine()) != "") // This doesn’t work!
+      println("Read: "+ line)
+      
+  When you compile this code, Scala will give you a warning that comparing values of type Unit and String 
+  using != will always yield true. Because in this case a line from the standard input, in Scala assignment always
+  results in the unit value, (). Thus, the value of the assignment “ line = readLine() ” will always be '()' and 
+  never be ""
+  ************************************************************
+  Because the while loop results in no value, it is often left out of pure functional languages.
+  ************************************************************
+  Scala includes the while loop nonetheless, because sometimes an imperative solution can be more readable, 
+  especially to programmers with a predominantly imperative background. For example, if you want to code an 
+  algorithm that repeats a process until some condition changes, a while loop can express it directly while the 
+  functional alternative, which likely uses recursion, may be less obvious to some readers of the code.
+  
+  An alternative way for gcdLoop is shown below, function 'gcd' is written in a more functional style that involves 
+  recursion ( gcd calls itself) and requires no vars:
+  
+    def gcd(x: Long, y: Long): Long =
+      if (y == 0) x 
+      else gcd(y, x % y)
+  
+  In general, we recommend you challenge while loops in your code in the same way you challenge vars.
+  In fact, while loops and var s often go hand in hand. Because while loops don’t result in a value, to make any 
+  kind of difference to your program, a while loop will usually either need to update vars or perform I/O. You can 
+  see this in action in the gcdLoop example shown previously. As that while loop does its business, it updates vars 
+  a and b . Thus, we suggest you be a bit suspicious of while loops in your code.
+  
+::for expressions  
+  Scala’s for expression is a Swiss army knife of iteration. It lets you combine a few simple ingredients in 
+  different ways to express a wide variety of iterations
+  example 1:
+    val filesHere = (new java.io.File(".")).listFiles
+    for (file <- filesHere)
+      println(file)
+      
+    the “ file <- filesHere ” syntax, which is called a generator, we iterate through the elements of filesHere. In
+    each iteration, a new val named file is initialized with an element value. The compiler infers the type of file
+    to be File , because filesHere is an Array[File] . For each iteration, the body of the for expression, 
+    println(file) , will be executed. Because File ’s toString method yields the name of the file or directory, the
+    names of all the files and directories in the current directory will be printed.  
+    The for expression syntax works for any kind of collection, not just arrays. One convenient special case is the
+    Range type
+      for (i <- 1 to 4)
+        println("Iteration "+ i)  //输出1到4 包含4
+      
+      for (i <- 1 until 4)
+        println("Iteration "+ i)  //输出1到4 不包含4
+        
+    Filtering
+      Sometimes you do not want to iterate through a collection in its entirety. You want to filter it down to some
+      subset. You can do this with a for expression by adding a filter: an if clause inside the for’s parentheses:
+        val filesHere = (new java.io.File(".")).listFiles
+        
+        for (file <- filesHere if file.getName.endsWith(".scala"))
+          println(file)
+        或者
+        for (file <- filesHere)   //not recommanded
+          if (file.getName.endsWith(".scala"))
+            println(file)
+      The second one yields the same output as the previous code, and likely looks more familiar to programmers 
+      with an imperative background. The imperative form, however, is only an option because this particular for 
+      expression is executed for its printing side-effects and results in the unit value '()'. As will be 
+      demonstrated later in this section, the for expression is called an “expression” because it can result in an
+      interesting value, a collection whose type is determined by the for expression’s <- clauses.
+      
+      to include multiple filters:
+        for (
+          file <- filesHere
+          if file.isFile
+          if file.getName.endsWith(".scala")
+        ) println(file)
+        
+    Nested iteration
+      def grep(pattern: String) =
+        for (
+          file <- filesHere
+          if file.getName.endsWith(".scala");
+          line <- fileLines(file)
+          if line.trim.matches(pattern)
+        ) println(file +": "+ line.trim)
+          
+    Producing a new collection
+      While all of the examples so far have operated on the iterated values and then forgotten them, you can also 
+      generate a value to remember for each iteration. To do so, you prefix the body of the for expression by the
+      keyword 'yield'
+      
+        def scalaFiles =
+          for {
+            file <- filesHere
+            if file.getName.endsWith(".scala")
+          } yield file
+      
+      Each time the body of the for expression executes it produces one value
+      实际用法
+        val forLineLengths =
+          for {
+            file <- filesHere
+            if file.getName.endsWith(".scala")
+            line <- fileLines(file)
+            trimmed = line.trim
+            if trimmed.matches(".*for.*")
+          } yield trimmed.length
+  
+::try expression
+    Throwing exceptions
+      val half =
+        if (n % 2 == 0)
+          n / 2
+        else
+          throw new RuntimeException("n must be even")
+    
+    Catching exceptions
+      try {
+        val f = new FileReader("input.txt")
+        // Use and close file
+      } catch {
+        case ex: FileNotFoundException => // Handle missing file
+        case ex: IOException => // Handle other I/O error
+      }
+  
+    特别注意：
+      unlike Java, Scala does not require you to catch checked exceptions, or declare them in a throws clause. You 
+      can declare a throws clause if you wish with the @throws annotation, but it is not required. See Section 31.2 
+      for more information on @throws.
+    
+    The finally clause  
+      val file = new FileReader("input.txt")
+      try {
+        // Use the file
+      } finally {
+        file.close()
+        // Be sure to close the file
+      }
+
+::match expression
+  Scala’s match expression lets you select from a number of alternatives, just like switch statements in other 
+  languages. In general a match expression lets you select using arbitrary patterns, which will be described in 
+  Chapter 15. Example:
+  
+    val firstArg = if (args.length > 0) args(0) else ""
+      firstArg match {
+      case "salt" => println("pepper")
+      case "chips" => println("salsa")
+      case "eggs" => println("bacon")
+      case _ => println("huh?")   // '_' is a whild symbole frequently used in Scala, here it works as default
+    }
+
+::Living without 'break' and 'continue'
+  Scala leaves out these commands because they do not mesh well with function literals, a feature described in the
+  next chapter.
+  The simplest approach is to replace every 'continue' by an if and every 'break' by a boolean variable.
+  
+    // This is Java
+    int i = 0;   
+    boolean foundIt = false;
+    while (i < args.length) {
+      if (args[i].startsWith("-")) {
+        i = i + 1;
+        continue;
+      }
+      if (args[i].endsWith(".scala")) {
+        foundIt = true;
+        break;
+      }
+      i = i + 1;
+    }
+    
+    //this is scala, but not recommanded version, because of the var
+    var i = 0  
+    var foundIt = false
+    while (i < args.length && !foundIt) {
+      if (!args(i).startsWith("-")) {
+        if (args(i).endsWith(".scala"))
+          foundIt = true
+      }
+      i = i + 1
+    }
+    
+    //this is scala, recommanded version
+    def searchFrom(i: Int): Int =
+      if (i >= args.length) -1
+      else if (args(i).startsWith("-")) searchFrom(i + 1)
+      else if (args(i).endsWith(".scala")) i
+      else searchFrom(i + 1)
+    val i = searchFrom(0)
+    
+    特别注意：
+      The Scala compiler will not actually emit a recursive function for the code shown above. Because all of the 
+      recursive calls are in tail-call position, the compiler will generate code similar to a while loop. Each
+      recursive call will be implemented as a jump back to the beginning of the function. Tail-call optimization 
+      will be discussed in Section 8.9.
+      
+::Variable scope      
+  Scala’s scoping rules are
+  almost identical to Java’s. One difference between Java and Scala exists, however, in that Scala allows you to 
+  define variables of the same name in nested scopes.
+  
+    One difference to note between Scala and Java is that unlike Scala, Java will not let you create a variable in
+    an inner scope that has the same name as a variable in an outer scope. In a Scala program, an inner variable is
+    said to shadow a like-named outer variable, because the outer variable becomes invisible in the inner scope.
+    
