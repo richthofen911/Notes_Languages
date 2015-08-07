@@ -1,0 +1,91 @@
+::method
+  The most common way to define a function is as a member of some object. Such a function is called a method.
+
+::local function
+  an important design principle of the functional programming style: programs should be decomposed into many small 
+  functions that each do a well-defined task. Individual functions are often quite small. The advantage of this style
+  is that it gives a programmer many building blocks that can be flexibly composed to do more difficult things. Each 
+  building block should be simple enough to be understood individually.
+  One problem with this approach is that all the helper function names can pollute the program namespace. In the 
+  interpreter this is not so much of a problem, but once functions are packaged in reusable classes and objects, it’s
+  desirable to hide the helper functions from clients of a class. They often do not make sense individually, and you 
+  often want to keep enough flexibility to delete the helper functions if you later rewrite the class a different way.
+  
+  In Java, your main tool for this purpose is the private method. 
+  In Scala, This private-method approach works as well, but Scala offers an additional approach: you can define 
+  functions inside other functions. Just like local variables, such local functions are visible only in their 
+  enclosing block.
+
+::first-class function
+  not only can you define functions and call them, but you can write down functions as unnamed literals and then pass
+  them around as values.
+  A function literal is compiled into a class that when instantiated at runtime is a function value.
+    (x: Int) => x + 1
+  The => designates that this function converts the thing on the left (any integer x) to the thing on the right 
+  ( x + 1 ). So, this is a function mapping any integer x to x + 1
+  
+  Function values are objects, so you can store them in variables if you like. They are functions, too, so you can 
+  invoke them using the usual parentheses function-call notation
+    var increase = (x: Int) => x + 1
+    increase(10)
+
+
+::Short forms of function literals
+  Scala provides a number of ways to leave out redundant information and write function literals more briefly. Keep
+  your eyes open for these opportunities, because they allow you to remove clutter from your code.
+  Briefly, there are serveral ways
+    raw form------        someNumbers.filter((x: Int) => x > 0)
+    1. to leave off the parameter types
+          someNumbers.filter((x) => x > 0)
+          
+    2. to remove useless characters is to leave out parentheses around a parameter whose type is inferred
+          someNumbers.filter(x => x > 0)
+    
+    3. to use placehoder syntax such as '_'      
+          someNumbers.filter(_ > 0)
+          
+::Placeholder syntax
+  You can think of the underscore as a “blank” in the expression that needs to be “filled in.” This blank will be 
+  filled in with an argument to the function each time the function is invoked. 详见 书p.191
+          
+
+::Partially applied functions    
+  A partially applied function is an expression in which you don’t supply all of the arguments needed by the 
+  function. Instead, you supply some, or none, of the needed arguments, like below
+    '_' can be a the placeholder for not only one parameter but also an entire parameter list. Example
+      def sum(a: Int, b: Int, c: Int) = a + b + c
+      val a = sum _
+
+::closure
+  书 p.195
+  
+::special function call forms (repeated parameters, named arguments, and default arguments)
+    Repeated parameters
+      Scala allows you to indicate that the last parameter to a function may be repeated. This allows clients to 
+      pass variable length argument lists to the function. To denote a repeated parameter, place an asterisk after
+      the type of the parameter. example:
+      
+        def echo(args: String*) =
+          for (arg <- args) println(arg)
+          
+        echo("hello", "world!")
+      
+    Named arguments
+    In a normal function call, the arguments in the call are matched one by one in the order of the parameters of 
+    the called function while Named arguments allow you to pass arguments to a function in a different order. 
+    like this:  
+      def speed(distance: Float, time: Float): Float = distance / time
+      
+      speed(time = 10, distance = 100) //the order is not as defined
+      
+    Default parameter values
+      def printTime(out: java.io.PrintStream = Console.out) =
+        out.println("time = "+ System.currentTimeMillis())
+      
+      If you call the function as printTime() , thus specifying no argument to be used for out , then out will be 
+      set to its default value of Console.out. You could also call the function with an explicit output stream. For
+      example, you could send logging to the standard error output by calling the function as printTime(Console.err)
+  
+::Tail recursion
+  
+    
