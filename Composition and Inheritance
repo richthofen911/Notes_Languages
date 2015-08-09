@@ -1,0 +1,47 @@
+::Composition入门例子
+  the following expression would construct a larger element consisting of two columns, each with a height of 
+  two:
+    val column1 = elem("hello") above elem("***")
+    val column2 = elem("***") above elem("world")
+    column1 beside column2
+  
+  composing operators 'above' and 'beside'. Such composing operators are also often called combinators 
+  because they combine elements of some domain into new elements.
+  Thinking in terms of combinators is generally a good way to approach library design: it pays to think 
+  about the fundamental ways to construct objects in an application domain. What are the simple objects? 
+  In what ways can more interesting objects be constructed out of simpler ones? How do combinators hang 
+  together? What are the most general combinations? Do they satisfy any interesting laws? If you have good 
+  answers to these questions, your library design is on track.  
+  
+::abstract class
+  例子：
+    abstract class Element {
+      def contents: Array[String]
+    }
+  
+  The abstract modifier signifies that the class may have abstract members that do not have an 
+  implementation. As a result, you cannot instantiate an abstract class.  
+  
+::Defining parameterless methods
+  如果函数没有参数，传统的定义方法是形如
+    def width(): Int
+  Scala推荐的定义方法是形如
+    def width: Int
+  
+::Extending classes
+  extends抽象类Element的方法:
+    we will need to create a subclass that extends Element and implements the abstract contents method:
+      class ArrayElement(conts: Array[String]) extends Element {
+        def contents: Array[String] = conts
+      }
+
+::Overriding methods and fields
+**************************
+subtype和subclass有区别
+**************************
+
+::Uniform Access Principle
+  Scala遵循统一访问原则(Uniform Access Principle) 意味着变量和无参数的函数都是以同样方式访问，只要用def替代val 或var即可
+  
+    
+  
