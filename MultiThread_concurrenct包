@@ -7,6 +7,11 @@ http://www.open-open.com/bbs/view/1320131360999
 Doug Lea推出了java.util.concurrent工具包, 提供了更实用的并发程序模型以简化并发完成。开发者们借助于此，将有效的
 减少竞争条件(race conditions）和死锁线程
 
+Callable 和 Runnable 区别： 
+1.Callable 使用 call（） 方法， Runnable 使用 run() 方法 
+2.call() 可以返回值， 而 run()方法不能返回。 
+3.call() 可以抛出受检查的异常，比如ClassNotFoundException， 而run()不能抛出受检查的异常。 
+
 重要并发模型概览：
 Executor                  ：具体Runnable任务的执行者。
 ExecutorService           ：线程池管理者，实现类有多种，这里涉及部分。可把Runnable,Callable提交到池中让其调度
