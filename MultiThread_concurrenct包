@@ -12,6 +12,43 @@ Callable 和 Runnable 区别：
 2.call() 可以返回值， 而 run()方法不能返回。 
 3.call() 可以抛出受检查的异常，比如ClassNotFoundException， 而run()不能抛出受检查的异常。 
 
+Future接口及使用：
+  从jdk1.5开始可以利用Future来跟踪异步计算的结果。在此之前主线程要想获得工作线程（异步计算线程）的结果是比较麻烦的
+  需要我们进行特殊的程序结构设计，比较繁琐而且容易出错。有了Future我们就可以设计出比较优雅的异步计算程序结构模型：
+  根据分而治之的思想，可以把异步计算的线程按照职责分为3类：
+    1. 异步计算的发起线程（控制线程）：负责异步计算任务的分解和发起，把分解好的任务交给异步计算的work线程去执行，
+       发起异步计算后，发起线程可以获得Futrue的集合，从而可以跟踪异步计算结果
+    2. 异步计算work线程：负责具体的计算任务
+    3. 异步计算结果收集线程：从发起线程那里获得Future的集合，并负责监控Future的状态，根据Future的状态来处理异步计算
+       的结果。
+  public interface Future<V> Future 表示异步计算的结果。
+  Future有个get方法而获取结果只有在计算完成时获取，否则会一直阻塞直到任务转入完成状态，然后会返回结果或者抛出异常
+  Future主要定义了5个方法
+    1)boolean cancel(boolean mayInterruptIfRunning)：试图取消对此任务的执行。如果任务已完成、或已取消，或者由于某些
+      其他原因而无法取消，则此尝试将失败。当调用 cancel 时，如果调用成功，而此任务尚未启动，则此任务将永不运行。如
+      任务已经启动，则 mayInterruptIfRunning 参数确定是否应该以试图停止任务的方式来中断执行此任务的线程。此方法返回
+      后，对 isDone() 的后续调用将始终返回 true。如果此方法返回 true，则对 isCancelled() 的后续调用将始终返回 true。 
+    2)boolean isCancelled()：如果在任务正常完成前将其取消，则返回 true。 
+    3)boolean isDone()：如果任务已完成，则返回 true。 可能由于正常终止、异常或取消而完成，在所有这些情况中，此方法
+      都将返回 true。 
+    4)V get()throws InterruptedException,ExecutionException：如有必要，等待计算完成，然后获取其结果。 
+    5)V get(long timeout,TimeUnit unit) throws InterruptedException,ExecutionException,TimeoutException：如有必要，
+      最多等待为使计算完成所给定的时间之后，获取其结果（如果结果可用）
+  FutureTask类是Future 的一个实现，并实现了Runnable，因此可将 FutureTask 提交给 Executor执行，也可传递给Thread对象
+  执行。可使用 FutureTask 包装 Callable 或 Runnable 对象
+  constructor摘要  
+    FutureTask(Callable<V> callable)   //创建一个 FutureTask，一旦运行就执行给定的 Callable。
+      
+    FutureTask(Runnable runnable, V result)   
+              //创建一个 FutureTask，一旦运行就执行给定的 Runnable，并安排成功完成时 get 返回给定的结果 。  
+  
+    如果不需要特定的结果，则考虑使用下列形式的构造：
+      Future<?> f = new FutureTask<Object>(runnable, null)  
+  例子：模拟一个会计算账的过程，主线程已经获得其他帐户的总额了，为了不让主线程等待 PrivateAccount类的计算结果的返回
+        而启用新的线程去处理， 并使用 FutureTask对象来监控    
+    
+      
+
 重要并发模型概览：
 Executor                  ：具体Runnable任务的执行者。
 ExecutorService           ：线程池管理者，实现类有多种，这里涉及部分。可把Runnable,Callable提交到池中让其调度
@@ -27,8 +64,159 @@ Future                    ：Future 表示异步计算的结果。
 ScheduledExecutorService  ：一个 ExecutorService，可安排在给定的延迟后运行或定期执行的命令。
 
 详细
-Executor/ExecutorService: Java里面线程池的顶级接口是Executor，但是严格意义上讲Executor并不是一个线程池，而只是
+Executor(s)/ExecutorService: Executor
+                          Java里面线程池的顶级接口是Executor，但是严格意义上讲Executor并不是一个线程池，而只是
                           一个执行线程的工具。真正的线程池接口是ExecutorService。
+                          并发编程的一种编程方式是把任务拆分为一系列的小任务，即Runnable，然后将这些任务提交给一个
+                          Executor执行，Executor.execute(Runnalbe) 。Executor在执行时使用其内部的线程池来完成操作。
+                          Executor的子接口有：ExecutorService,ScheduledExecutorService
+                          已知实现类：AbstractExecutorService,ScheduledThreadPoolExecutor,ThreadPoolExecutor
+                          Executor属于public类型的接口。可以用于提交，管理或者执行Runnable任务。实现Executor接口的
+                          class还可以控制Runnable任务执行线程的具体细节。包括线程使用的细节、调度等。
+                          一般来说，Runnable任务开辟在新线程中的使用方法为：
+                            new Thread(new RunnableTask())).start()
+                          但在Executor中，可以使用Executor而不用显示地创建线程。例如
+                            Exectuor executor = anExecutor();  
+                            executor.execute(new RunnableTask()); //异步执行
+                            
+                          Executors
+                          Executors类为Executor接口及其实现提供了便捷的工厂方法用于创建线程池，返回的线程池都实现了
+                          ExecutorService接口。
+                            1、public static ExecutorService newFiexedThreadPool(int Threads) 
+                               创建固定数目线程的线程池。
+                            2、public static ExecutorService newCachedThreadPool()
+                               创建一个可缓存的线程池，调用execute 将重用以前构造的线程（如果线程可用）,
+                               如果没有可用的线程，则创建一个新线程并添加到池中。终止并从缓存中移除那些60秒内
+                               未被使用的线程。
+                            3、public static ExecutorService newSingleThreadExecutor()
+                               创建一个单线程化的Executor。
+                            4、public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize)
+                              创建一个支持定时及周期性的任务执行的线程池，多数情况下可用来替代Timer类。
+                          
+                          ExecutorService
+                          ExecutorService可以理解为程序员提供了一堆操作Executor的API， 它扩展了Executor并添加了一些
+                          生命周期管理的方法。一个Executor的生命周期有三种状态：运行、关闭和终止
+                            （ Executor创建时处于运行状态。当调用ExecutorService.shutdown()后，处于关闭状态，
+                               isShutdown()方法返回true。这时，不应该再向Executor中添加任务，所有已添加的任务执行
+                               完毕后，Executor处于终止状态，isTerminated()返回true。如果Executor处于关闭状态，往
+                               Executor提交任务会抛出unchecked exception RejectedExecutionException。
+                             ) 
+                          ExecutorService的本质：接口ExecutorService 表述了异步执行的机制，且可以让任务在后台执行。
+                          一个ExecutorService 实例因此特别像一个线程池。事实上，在 java.util.concurrent 包中的
+                          ExecutorService 的实现就是一个线程池的实现，包括如下实现类：
+                            ThreadPoolExecutor
+                            ScheduledThreadPoolExecutor
+                            例：
+                            ExecutorService executorService = Executors.newFixedThreadPool(10);//工厂方法创建  
+                            executorService.execute(new Runnable() {  
+                                public void run() {  
+                                    System.out.println("Asynchronous task");  
+                                }  
+                            });  
+                            executorService.shutdown();  
+                          
+                          ExecutorService 使用方法: 有几种不同的方式让你将任务委托给一个ExecutorService：   
+                            1.execute(Runnable)
+                              execute(Runnable) 接收一个java.lang.Runnable对象作为参数，并以异步的方式执行它,例：
+                                ExecutorService executorService = Executors.newSingleThreadExecutor();
+                                executorService.execute(new Runnable() {
+                                   public void run() {
+                                       System.out.println("Asynchronous task");
+                                   }
+                                });
+                                executorService.shutdown();
+                               使用这种方式没有办法获取执行 Runnable 之后的结果，如果希望获取运行之后的返回值，
+                               就必须使用接收 Callable 参数的 execute() 方法
+                            2.submit(Runnable)
+                              submit(Runnable) 同样接收一个Runnable 的实现作为参数，但是会返回一个Future 对象。
+                              这个Future 对象可以用于判断 Runnable 是否结束执行
+                                Future future = executorService.submit(new Runnable() {
+                                  public void run() {
+                                      System.out.println("Asynchronous task");
+                                  }
+                                });
+                                //如果任务结束执行则返回 null
+                                System.out.println("future.get()=" + future.get());
+                               
+                            3.submit(Callable)
+                              方法 submit(Callable) 和方法 submit(Runnable) 比较类似，但是区别则在于它们接收不同的
+                              参数类型。Callable 的实例与 Runnable 的实例很类似，但是 Callable 的 call() 方法可以
+                              返回一个结果。方法 Runnable.run() 则不能返回结果。Callable 的返回值可以从方法 
+                              submit(Callable) 返回的 Future 对象中获取
+                                Future future = executorService.submit(new Callable(){  
+                                  public Object call() throws Exception {  
+                                      System.out.println("Asynchronous Callable");  
+                                      return "Callable Result";  
+                                  }  
+                                });  
+                                System.out.println("future.get() = " + future.get()); 
+                                
+                            4.invokeAny()
+                              方法 invokeAny() 接收一个包含 Callable 对象的集合作为参数。调用该方法不会返回Future
+                              对象，而是返回集合中某一个Callable 对象的结果，而且无法保证调用之后返回的结果是哪一个
+                              Callable，只知道它是这些 Callable 中一个执行结束的 Callable 对象。如果一个任务运行
+                              完毕或者抛出异常，方法会取消其它的 Callable 的执行
+                                ExecutorService executorService = Executors.newSingleThreadExecutor();
+                                Set<Callable<String>> callables = new HashSet<Callable<String>>();
+                                callables.add(new Callable<String>() {
+                                    public String call() throws Exception {
+                                        return "Task 1";
+                                    }
+                                });
+                                callables.add(new Callable<String>() {
+                                    public String call() throws Exception {
+                                        return "Task 2";
+                                    }
+                                });
+                                callables.add(new Callable<String>() {
+                                    public String call() throws Exception {
+                                        return "Task 3";
+                                    }
+                                });
+                                 
+                                String result = executorService.invokeAny(callables);
+                                System.out.println("result = " + result);
+                                executorService.shutdown();
+                            5.invokeAll()
+                              方法 invokeAll() 会调用存在于参数集合中的所有 Callable 对象，并且返回一个包含Future
+                              对象的集合，可以通过这个返回的集合来管理每个 Callable 的执行结果。需要注意的是，任务
+                              有可能因为异常而导致运行结束，所以它可能并不是真的成功运行了。没有办法通过 Future 
+                              对象来了解到这个差异
+                            
+                          ExecutorService服务的关闭
+                            使用 ExecutorService 完毕之后应该关闭它，这样才能保证线程不会继续保持运行状态。 
+                            例如果程序通过 main() 方法启动且主线程退出了，如果还有一个活动的 ExecutorService 存在
+                            于程序中，那么程序将会继续保持运行状态。存在于 ExecutorService 中的活动线程会阻止Java
+                            虚拟机关闭。 
+                            为了关闭在 ExecutorService 中的线程，需要调用 shutdown() 方法。但ExecutorService 并不会
+                            马上关闭，而是不再接收新的任务，一旦所有的线程结束执行当前任务，ExecutorServie 才会真的
+                            关闭。所有在调用 shutdown() 方法之前提交到 ExecutorService 的任务都会执行。 
+                            如希望立即关闭 ExecutorService，可以调用 shutdownNow() 方法。这个方法会尝试马上关闭所有
+                            正在执行的任务，并跳过所有已经提交但还没有运行的任务。但是对于正在执行的任务，是否能够
+                            成功关闭它是无法保证的。
+                            
+                          CompletionService
+                            现在在Java中使用多线程通常不会再使用Thread对象了。而是会用到java.util.concurrent包下的
+                            ExecutorService来初始化一个线程池用。使用ExecutorService类的时候，常维护一个list保存
+                            submit的callable task所返回的Future对象。然后在主线程中遍历这个list并调用Future的get()
+                            方法取到Task的返回值.
+                            其实除了使用ExecutorService外，还可通过CompletionService包装ExecutorService，然后调用其
+                            take()方法去取Future对象。
+                            CompletionService和ExecutorService的主要的区别在于submit的task不一定是按照加入自己维护
+                            的list顺序完成的。
+                            ExecutorService中:从list中遍历的每个Future对象并不一定处于完成状态，这时调用get()方法就
+                                              会被阻塞住，如果系统是设计成每个线程完成后就能根据其结果继续做后面的
+                                              事，这样对于处于list后面的但是先完成的线程就会增加了额外的等待时间。
+                            CompletionService中: 的实现是维护一个保存Future对象的BlockingQueue。只有当这个Future
+                                              对象状态是结束的时候，才会加入到这个Queue中，take()方法其实就是
+                                              Producer-Consumer中的Consumer。它会从Queue中取出Future对象，如果
+                                              Queue是空的，就会阻塞在那里，直到有完成的Future对象加入到Queue中。
+                                              所以，先完成的必定先被取出。这样就减少了不必要的等待时间。
+                            
+                          ThreadPoolExecutor类提供了一个可供可扩展的线程池实现。
+                          Executor中的方法execute。void execute(Runnable command)表示在未来的某个时间执行给定的命令
+                          该命令可能在新的线程、已经入池的线程或者正在调用的线程中执行
+                          
                           结构图 http://www.blogjava.net/images/blogjava_net/xylz/Windows-Live-Writer/-Java-Concurrency-28--part-1-_1302E/Executor-class_thumb.png
                           Executor的execute方法只是执行一个Runnable的任务，当然了从某种角度上将最后的实现类也是
                           在线程中启动此任务的。根据线程池的执行策略最后这个任务可能在新的线程中执行，或者线程
