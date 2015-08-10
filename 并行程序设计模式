@@ -1,0 +1,51 @@
+http://www.cnblogs.com/panfeng412/p/java-program-tuning-reading-notes-of-concurrent-program-design-pattern.html
+
+::Future模式
+  客户端请求的处理过程从同步改为异步以便将客户端解放出来，在服务端程序处理期间可以去干点其他事情，
+  最后再来取请求的结果
+
+::Master-Worker模式
+  由两类线程实现：Master线程负责接收和分发任务（将任务拆成一个个的子任务）；Worker线程负责处理子任务，每个Worker线程
+  只处理部分任务，所有Worker线程共同完成所有任务的处理。好处在于能够将一个大的任务拆分成若干个小的任务，从而交给不同
+  的Worker并行的进行处理，进而提高系统的吞吐量。另外，Client端一旦提交任务后，Master线程完成任务的接收和分发后立即
+  返回，因此对客户端来说，整个过程也是异步进行的。
+  一般的实现思路如下：
+    1）Master中首先需要维护一个队列Queue，用于接收任务，同时维护一个所有Worker线程的threadMap，以及每个子任务对应的
+      处理结果集resultMap，这里由于涉及到多线程同时访问resultMap，因此一般使用JDK中的ConcurrentHashMap实现；
+    2）Worker线程实现Runnable或继承Thread，通过Master中的Queue获取拆分后的子任务，并进行业务处理，并将处理结果设置
+      到resultMap中以便Master获取到；
+    3）Main入口函数则负责客户端请求的提交（需要先进程拆解），以及通过Master获取各个Worker的结果后进行合并，最后返回
+      给客户端完成处理过程。
+
+::Guarded Suspension(保护暂停)模式
+  所谓“保护暂停”模式，核心思想在于仅当服务进程准备好时，才提供服务。
+  好处在于既能保证所有的客户端请求均不丢失，同时也避免了服务器由于同时处理太多的请求而崩溃的现象，有效降低系统的瞬时
+  负载，有助于系统稳定性。其实这种通过中间加一层Queue做缓冲的模式在工作中用的很多，类似
+  “ClientThread -> Request Queue -> ServerThread”的情况比比皆是，只不过可能实际中我们往往会结合其他方法一起使用，
+  例如：
+    1）将ClientThread和ServerThread均为多个，则变为经典的“生产者-消费者”模式；
+    2）如果将ServerThread拆为1个Master和多个Worker，则又是上面提到的“Master-Worker”模式；
+    3）如果处理的请求需要返回结果，那么又需要和FutureTask结合起来使用（即：客户端的请求中需要带上FutureData，并在
+      ServerThread中为FutureData设置上RealData）。
+
+::不变模式（函数式语言中惯用）
+  并发多线程程序中，当多线程对同一个对象进行读写操作时，为了确保对象数据的一致性和准确性，必须进行同步操作，而这正
+  是对系统性能损失严重的地方。因此，为了提高并发并发程序的性能，我们可以创建一种不可改变的对象，使用过程中保持不变
+  性。这就是所谓“不变”模式。Java中这种模式用的很广，如String、Boolean、Short、Integer、Long、Byte等。
+  好处在于通过回避问题而不是解决问题的态度来处理多线程并发访问控制，但缺点是只适用于对象创建后内部状态和数据不可
+  发生变化的情况。
+  Java中不变模式的实现很简单，按照OO的思想，只需要满足以下几点即可：
+    1）将对象的所有属性设为private final的；
+    2）通过final修饰class确保类不可被继承；
+    3）去掉对象中的所有setXX方法；
+    4）有包含所有属性的构造函数用于创建对象。
+
+::生产者-消费者模式
+  生产者线程向内存缓冲区提交任务，消费者线程从内存缓冲区获取任务并进行处理。
+  好处在于将生产者线程和消费者线程进行解耦，优化系统整体结构，缓解性能瓶颈对系统性能的影响。
+  Java中，一般来说使用LinkedBlockingQueue作为上面说的“内存缓冲区”，它是阻塞型BlockingQueue的一种使用Link List的实现
+  它对头和尾采用两把不同的锁，与ArrayBlockingQueue相比提高了吞吐量，适合于实现“生产者-消费者”模式。
+  实现的大致思路如下：
+    1）创建Producer类，实现run方法用于提交任务；
+    2）创建Consumer类，实现run方法用于处理任务；
+    3）Main函数中建立缓冲区，若干个生产者，若干个消费者，创建线程池并开始使这些线程工作起来。
