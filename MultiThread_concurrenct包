@@ -46,6 +46,7 @@ Future接口及使用：
       Future<?> f = new FutureTask<Object>(runnable, null)  
   例子：模拟一个会计算账的过程，主线程已经获得其他帐户的总额了，为了不让主线程等待 PrivateAccount类的计算结果的返回
         而启用新的线程去处理， 并使用 FutureTask对象来监控    
+        https://github.com/richthofen911/JavaLab/blob/master/Multithread/src/net/callofdroidy/labjava/multithread/FutureTaskDemo.java
     
       
 
@@ -83,15 +84,24 @@ Executor(s)/ExecutorService: Executor
                           Executors类为Executor接口及其实现提供了便捷的工厂方法用于创建线程池，返回的线程池都实现了
                           ExecutorService接口。
                             1、public static ExecutorService newFiexedThreadPool(int Threads) 
-                               创建固定数目线程的线程池。
+                               创建一个可重用固定线程集合的线程池，以共享的无界队列方式来运行这些线程（只有要请求
+                               过来，就会在一个队列里等待执行）如果在关闭前的执行期间由于失败而导致任何线程终止，
+                               那么一个新线程将代替它执行后续的任务（如果需要）。
                             2、public static ExecutorService newCachedThreadPool()
                                创建一个可缓存的线程池，调用execute 将重用以前构造的线程（如果线程可用）,
                                如果没有可用的线程，则创建一个新线程并添加到池中。终止并从缓存中移除那些60秒内
-                               未被使用的线程。
+                               未被使用的线程。对于执行很多短期异步任务的程序而言，这种线程池通常可提高程序性能
+                               另外，可以使用 ThreadPoolExecutor 构造方法创建具有类似属性但细节不同
+                               （例如超时参数）的线程池
                             3、public static ExecutorService newSingleThreadExecutor()
-                               创建一个单线程化的Executor。
+                               创建一个使用单个 worker 线程的 Executor，以无界队列方式来运行该线程。（注意，如果
+                               因为在关闭前的执行期间出现失败而终止了此单个线程，那么如果需要，一个新线程将代替它
+                               执行后续的任务）。可保证顺序地执行各个任务，并且在任意给定的时间不会有多个线程是
+                               活动的。与其他等效的 newFixedThreadPool(1) 不同，可保证无需重新配置此方法所返回的
+                               执行程序即可使用其他的线程。
                             4、public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize)
                               创建一个支持定时及周期性的任务执行的线程池，多数情况下可用来替代Timer类。
+                          这些方法返回的都是ExecutorService对象，这个对象可以理解为就是一个线程池    
                           
                           ExecutorService
                           ExecutorService可以理解为程序员提供了一堆操作Executor的API， 它扩展了Executor并添加了一些
@@ -231,3 +241,10 @@ Executor(s)/ExecutorService: Executor
                           Future之前我们检测一个线程是否执行完毕通常使用Thread.join()或者用一个死循环加状态
                           位来描述线程执行完毕。现在有了更好的方法能够阻塞线程，检测任务执行完毕甚至取消执行
                           中或者未开始执行的任务  
+
+Semaphore
+一个计数信号量。从概念上讲，信号量维护了一个许可集合。如有必要，在许可可用前会阻塞每一个 acquire()，然后再获取该
+许可。每个 release() 添加一个许可，从而可能释放一个正在阻塞的获取者。但是，不使用实际的许可对象，Semaphore 只对
+可用许可的号码进行计数，并采取相应的行动。
+Semaphore 通常用于限制可以访问某些资源（物理或逻辑的）的线程数目。例如，下面的类使用信号量控制对内容池的访问：
+这里是一个实际的情况，大家排队上厕所，厕所只有两个位置，来了10个人需要排队。
