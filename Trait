@@ -1,0 +1,84 @@
+::概述
+  A trait definition looks just like a class definition except that it uses the keyword trait. Example:
+
+  trait Philosophical {
+    def philosophize() {
+      println("I consume memory, therefore I am!")
+    }
+  }
+  
+  Once a trait is defined, it can be mixed in to a class using either the 'extends' or 'with' keywords. Scala 
+  “mix in” traits rather than inherit from them, because mixing in a trait has important differences from the multiple
+  inheritance found in many other languages. (Why&How?(see bottom))
+  You can use the 'extends' keyword to mix in a trait; in that case you implicitly inherit the trait’s superclass
+  example:
+    class Frog extends Philosophical {
+      override def toString = "green"
+    }
+  Here, Frog subclasses AnyRef (the superclass of Philosophical ) and mixes in Philosophical . Methods inherited from
+  a trait can be used just like methods inherited from a superclass.
+    val frog = new Frog
+    frog.philosophize()
+  
+  A trait also defines a type. Here’s an example in which Philosophical is used as a type:  
+    val phil: Philosophical = frog
+    phil.philosophize()
+    
+  The type of phil is Philosophical , a trait. Thus, variable phil could have been initialized with any object 
+  whose class mixes in Philosophical
+  
+  If you want to mix in multiple traits, you add more with clauses
+    class Animal
+    trait HasLegs
+    class Frog extends Animal with Philosophical with HasLegs {
+      override def toString = "green"
+    }
+    
+  with 'trait' 中的方法可以被override
+  
+  Difference between 'trait' and 'interface'(in Java):
+  You can do anything in a trait definition that you can do in a class definition, and the syntax looks exactly the
+  same, with only two exceptions:
+    1) a trait cannot have any “class” parameters, i.e., parameters passed to the primary constructor of a class
+    
+    2) whereas in classes, super calls are statically bound, in traits, they are dynamically bound. 
+       If you write “ super.toString ” in a class, you know exactly which method implementation will be invoked. 
+       When you write the same thing in a trait, however, the method implementation to invoke for the super call is
+       undefined when you define the trait. Rather, the implementation to invoke will be determined anew each time 
+       the trait is mixed into a concrete class. This curious behavior of super is key to allowing traits to work 
+       as stackable modifications, which will be described in Section 12.5. The rules for resolving super calls will
+       be given in Section 12.6.
+       
+::Thin interfaces VS rich ones  
+  One major use of traits is to automatically add methods to a class in terms of methods the class already has. 
+  That is, traits can enrich a thin interface, making it into a rich interface.
+  Thin versus rich interfaces represents a commonly faced trade-off in object-oriented design. The trade-off is 
+  between the implementers and the clients of an interface.
+  ----A rich interface has many methods, which make it convenient for the caller. Clients can pick a method that 
+  exactly matchesthe functionality they need. 
+  ----A thin interface, on the other hand, has fewer methods, and thus is easier on the implementers. Clients 
+  calling into a thin interface, however, have to write more code.
+  Since Scala traits can contain concrete methods, they make rich interfaces far more convenient.
+  Adding a concrete method to a trait tilts the thin-rich trade-off heavily towards rich interfaces. Unlike in Java
+  adding a concrete method to a Scala trait is a one-time effort. You only need to implement the method once, in
+  the trait itself, instead of needing to reimplement it for every class that mixes in the trait. Thus, rich 
+  interfaces are less work to provide in Scala than in a language without traits.
+  To enrich an interface using traits, simply define a trait with a small number of abstract methods-----the thin 
+  part of the trait’s interface—and a potentially large number of concrete methods, all implemented in terms of the
+  abstract methods. Then you can mix the enrichment trait into a class, implement the thin portion of the interface
+  and end up with a class that has all of the rich interface available.
+  
+  
+  
+  
+
+
+
+why 'mix in' rather than inherits?
+  Traits are a way to inherit from multiple class-like constructs, but they differ in important ways from the 
+  multiple inheritance present in many languages.
+    1) the interpretation of super 
+          With multiple inheritance, the method called by a super call can be determined right where the call appears
+          With traits, the method called is determined by a linearization of the classes and traits that are mixed 
+            into a class. 
+       This is the difference that enables the stacking of modifications described in the previous section
