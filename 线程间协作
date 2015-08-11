@@ -1,0 +1,50 @@
+线程之间的协作。最经典的有生产者-消费者模型：当队列满时，生产者需要等待队列有空间才能继续往里面放入商品，而在等待的
+期间内，生产者必须释放对临界资源（即队列）的占用权。因为生产者如果不释放对临界资源的占用权，那么消费者就无法消费队列
+中的商品，就不会让队列有空间，那么生产者就会一直无限等待下去。因此，一般情况下，当队列满时，会让生产者交出对临界资源
+的占用权，并进入挂起状态。然后等待消费者消费了商品，然后消费者通知生产者队列有空间了。同样地，当队列空时，消费者也
+必须等待，等待生产者通知它队列中有商品了。这种互相通信的过程就是线程间的协作。
+
+::synchronized 详解
+  http://www.cnblogs.com/devinzhang/archive/2011/12/14/2287675.html
+
+::wait()和await() notify()和signal()的区别:
+  wait()和notify()必须在synchronized的代码块中使用 因为只有在获取当前对象的锁时才能进行这两个操作 否则会报异常 
+  而await()和signal()一般与Lock()配合使用
+
+Java中线程协作的最常见的两种方式：利用Object.wait()、Object.notify()和使用Condition
+wait()、notify()和notifyAll()是Object类中的方法，特点包括：
+  1）wait()、notify()和notifyAll()方法是本地方法，并且为final方法，无法被重写。
+　2）调用某个对象的wait()方法能让当前线程阻塞，并且当前线程必须拥有此对象的monitor（即锁）
+　3）调用某个对象的notify()方法能够唤醒一个正在等待这个对象的monitor的线程，如果有多个线程都在等待这个对象的monitor，
+　    则只能唤醒其中一个线程；
+　4）调用notifyAll()方法能够唤醒所有正在等待这个对象的monitor的线程；
+　
+为何这三个不是Thread类声明中的方法，而是Object类中声明的方法？
+  （当然由于Thread类继承了Object类，所以Thread也可以调用者三个方法）其实很简单，由于每个对象都拥有monitor（即锁），
+  所以让当前线程等待某个对象的锁，当然应该通过这个对象来操作了。而不是用当前线程来操作，因为当前线程可能会等待多个
+  线程的锁，如果通过线程来操作，就非常复杂了。
+  
+如果调用某个对象的wait()方法，当前线程必须拥有这个对象的monitor（即锁），因此调用wait()方法必须在同步块或者同步方法
+中进行（synchronized块或者synchronized方法)。
+调用某个对象的wait()方法，相当于让当前线程交出此对象的monitor，然后进入等待状态，等待后续再次获得此对象的锁
+(Thread类中的sleep方法使当前线程暂停执行一段时间，从而让其他线程有机会继续执行，但它并不释放对象锁)；
+notify()方法能够唤醒一个正在等待该对象的monitor的线程，当有多个线程都在等待该对象的monitor的话，则只能唤醒其中一个
+线程，具体唤醒哪个线程则不得而知。
+同样地，调用某个对象的notify()方法，当前线程也必须拥有这个对象的monitor，因此调用notify()方法必须在同步块或者同步
+方法中进行（synchronized块或者synchronized方法）。
+nofityAll()方法能够唤醒所有正在等待该对象的monitor的线程，这一点与notify()方法是不同的。  
+简单的例子：
+  假如有三个线程Thread1、Thread2和Thread3都在等待对象objectA的monitor，此时Thread4拥有对象objectA的monitor，当在
+  Thread4中调用objectA.notify()方法之后，Thread1、Thread2和Thread3只有一个能被唤醒。注意，被唤醒不等于立刻就获取了
+  objectA的monitor。假若在Thread4中调用objectA.notifyAll()方法，则Thread1、Thread2和Thread3三个线程都会被唤醒，至于
+  哪个线程接下来能够获取到objectA的monitor具体取决于操作系统的调度。这个例子尤其要注意一点，“一个线程被唤醒不代表
+  立即获取了对象的monitor，只有等调用完notify()或者notifyAll()并退出synchronized块，释放对象锁后，其余线程才可获得
+  锁执行”
+  
+  
+
+
+参考链接：
+  http://www.cnblogs.com/dolphin0520/p/3920385.html
+  http://blog.sina.com.cn/s/blog_4e1e357d0101ipzs.html
+  http://blog.csdn.net/ghsau/article/details/7481142
