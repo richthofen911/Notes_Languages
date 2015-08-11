@@ -1,4 +1,5 @@
-::Composition入门例子
+本章需要连贯细读书上内容
+::Composition入门例子 
   the following expression would construct a larger element consisting of two columns, each with a height of 
   two:
     val column1 = elem("hello") above elem("***")
@@ -35,13 +36,102 @@
         def contents: Array[String] = conts
       }
 
-::Overriding methods and fields
-**************************
-subtype和subclass有区别
-**************************
+::Overriding 'methods' and 'fields'
+  in Scala, fields and methods belong to the same namespace. This makes it possible for a field to override a 
+  parameterless method. For instance, you could change the implementation of contents in class 'ArrayElement' from 
+  a method to a field without having to modify the abstract method definition of contents in class 'Element'
+  example:
+    class ArrayElement(conts: Array[String]) extends Element {
+      val contents: Array[String] = conts
+    }
 
-::Uniform Access Principle
-  Scala遵循统一访问原则(Uniform Access Principle) 意味着变量和无参数的函数都是以同样方式访问，只要用def替代val 或var即可
+
+  Uniform Access Principle
+  Scala遵循统一访问原则(Uniform Access Principle) 意味着变量和无参数的函数都是以同样方式访问，只要用def替代val或var
+  即可。这也意味着，Scala中，在同一个类里method和field重名时，会抛出编译错误
+  **************************
+  subtype和subclass有区别
+  **************************
+
+::Defining parametric fields
+  Consider again the definition of class ArrayElement shown in the previous section. It has a parameter conts whose
+  sole purpose is to be copied into the contents field. The name conts of the parameter was chosen just so that
+  it would look similar to the field name contents without actually clashing with it. This is a “code smell,” a sign
+  that there may be some unnecessary redundancy and repetition in your code. You can avoid the code smell by 
+  combining the parameter and the field in a single parametric field definition, like below:
+    class ArrayElement(
+      val contents: Array[String]
+    ) extends Element
   
+  Example2:
+    class Cat {
+      val dangerous = false
+    }
+    class Tiger(
+      override val dangerous: Boolean,
+      private var age: Int
+    ) extends Cat
+  Tiger ’s definition is a shorthand for the following alternate class definition
+  with an overriding member dangerous and a private member age :
+    class Tiger(param1: Boolean, param2: Int) extends Cat {
+      override val dangerous = param1
+      private var age = param2
+    }
     
+::Invoking superclass constructor
+  To invoke a superclass constructor, you simply place the argument or arguments you want to pass in parentheses 
+  following the name of the superclass. For example, class LineElement passes Array(s) to ArrayElement ’s primary 
+  constructor by placing it in parentheses after the superclass ArrayElement ’s name:
+    class LineElement(s: String) extends ArrayElement(Array(s)) {
+      override def width = s.length
+      override def height = 1
+    }
+
+::Using override modifiers
+  in Scala, this modifier is:
+    required for all members that override a concrete member in a parent class. 
+    optional if a member implements an abstract member with the same name.
+    forbidden if a member does not override or implement some other member in a base class.
+
+::Polymorphism and dynamic binding
+  书p.235
+  
+::Declaring final members
+  Sometimes when designing an inheritance hierarchy, you want to ensure that a member cannot be overridden by 
+  subclasses. In Scala, as in Java, you do this by adding a final modifier to the member. For example, you could
+  place a final modifier on ArrayElement ’s demo method
+    class ArrayElement extends Element {
+      final override def demo() {
+        println("ArrayElement's implementation invoked")
+      }
+    }
+    
+  You may also at times want to ensure that an entire class not be subclassed. To do this you simply declare the 
+  entire class final by adding a final modifier to the class declaration.  
+    final class ArrayElement extends Element {
+      override def demo() {
+        println("ArrayElement's implementation invoked")
+      }
+    }
+    
+::Using composition and inheritance
+  Composition and inheritance are two ways to define a new class in terms of another existing class. If what 
+  you’re after is primarily code reuse, you should in general prefer composition to inheritance. Only inheritance 
+  suffers from the fragile base class problem, in which you can inadvertently break subclasses by changing a 
+  superclass.
+  One question you can ask yourself about an inheritance relationship is whether it models an is-a relationship. 
+  For example, it would be reasonable to say that ArrayElement is-an Element. Another question you can ask is
+  whether clients will want to use the subclass type as a superclass type. In the case of ArrayElement , we do 
+  indeed expect clients will want to use an ArrayElement as an Element.
+  If you ask these questions about the inheritance relationships shown in Figure 10.3, do any of the relationships
+  seem suspicious? In particular, does it seem obvious to you that a LineElement is-an ArrayElement ? Do you
+  think clients would ever need to use a LineElement as an ArrayElement? In fact, we defined LineElement as a 
+  subclass of ArrayElement primarily to reuse ArrayElement ’s definition of contents . Perhaps it would be better,
+  therefore, to define LineElement as a direct subclass of Element.
+    见书p.239
+
+::Implementing 'above', 'beside' and 'toString'
+  接着上一节一起看
+    
+::Defining a factory object
   
