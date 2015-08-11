@@ -6,6 +6,11 @@
 
 ::synchronized 详解
   http://www.cnblogs.com/devinzhang/archive/2011/12/14/2287675.html
+  condition 详解
+  http://blog.csdn.net/ghsau/article/details/7481142
+
+::volatile 和 AtomicInteger http://blog.csdn.net/shihuacai/article/details/8856262
+  
 
 ::wait()和await() notify()和signal()的区别:
   wait()和notify()必须在synchronized的代码块中使用 因为只有在获取当前对象的锁时才能进行这两个操作 否则会报异常 
