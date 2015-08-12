@@ -67,6 +67,13 @@
   part of the trait’s interface—and a potentially large number of concrete methods, all implemented in terms of the
   abstract methods. Then you can mix the enrichment trait into a class, implement the thin portion of the interface
   and end up with a class that has all of the rich interface available.
+
+::Traits as stackable modifications
+  this is traint's second major usage. Traits let you modify the methods of a class, and they do
+  so in a way that allows you to stack those modifications with each other
+  实例见书 p.267
+  
+  
   
   
   
