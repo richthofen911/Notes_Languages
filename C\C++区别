@@ -1,0 +1,27 @@
+::扩展名
+  C文件以.c结尾
+  C++文件以.C（大写）或.cc, .cxx, .cpp, .c++结尾
+
+::输入输出
+  使用c++输入或输出工具，需要两行代码：
+    #include <iostream>
+    using namespace std;
+    
+  C使用printf()函数输出
+  
+  C++默认使用cout << 输出， 但也可以使用所有标准C的输入和输出函数(需要include C语言的stdio.h）
+         使用cin >> 输入，
+         cout可以进行拼接(可以拼接字符串和整数）cout << "Now you have " << 8 << "candies" << endl;
+  
+::函数定义
+  int main()  在c++中，括号内空着与在括号内写void等效，但不推荐再写void
+              在c中，省略返回类型相当于默认返回类型为int，在C++中已淘汰
+              
+::使用头文件
+  C使用xxx.h的方式，c++使用<xxx>的方式
+              
+::命名空间
+  using namespace std;
+  cout << "...";
+  等效于
+  std::cout << "...";
