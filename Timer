@@ -29,7 +29,12 @@ timer.scheduleAtFixedRate(task,delay, period);
 1） 调用timer.cancel()方法，可以在程序的任何地方调用此方法，甚至可以在TimerTask的run方法里使用此方法；
 
 2） 让timer定时器成为一个守护进程，这样当程序只有守护进程存在时，守护进程就会停止运行，程序自然也会停止，而让timer
-    成为一个守护进程的方法是使用Timer的timer(true)构造方法；
+    成为一个守护进程的方法是使用Timer的timer(true)构造方法
+    If your application is running a user-thread (i.e. non-daemon thread) then the JVM will wait till the return 
+    of its run() method (or the thread has completed its execution) before it terminates the application. However, 
+    if your thread is set as daemon, then it instructs the JVM not to wait for the completion of its execution in case 
+    the JVM needs to close down the application (i.e. when no other user threads are running). Other than this, both 
+    types of threads are treated equally in all other aspects.
 
 3） 调用System.exit(int arg0)方法，这样程序停止，timer自然停止。
 
