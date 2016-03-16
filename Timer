@@ -1,0 +1,40 @@
+http://www.iwwenbo.com/java-timer-timertask-thread/
+
+java.util.Timer是一个定时器，可以定时调度TimerTask，可以实现任务在某一时间执行一次，或者定期重复执行；
+而TimerTask是一个抽象类，它实现了Runnable接口，因此可以用它来实现多线程。TimerTask一般是以匿名类的方式创建，
+当然也可以创建一个继承于TimerTask的类。
+
+***注意***：
+
+如果在创建Timer的实例时使用的是timer(true)这个构造方法，那么上述代码只有
+timer.schedule(task, time) 和
+timer.schedule(task,time, period)
+会成功执行，这是因为这个构造方法表示是以守护进程的方式运行，守护进程之后在程序还在运行的时候才会运行，当执行一次后
+，除了这个守护进程没有其他代码需要执行，所以这个守护进程就没有存在的意义了，所以只有一次执行。而其他两个重载方法，因为从始至终只有守护进程存在，所以守护进程不会运行，也就不会执行run方法。
+
+Timer定时器还有两个方法：
+timer.scheduleAtFixedRate(task,time, period);
+timer.scheduleAtFixedRate(task,delay, period);
+
+第一个方法表示，让任务再time时间执行一次，然后每隔period时间间隔执行一次；
+第二个方法表示，让任务在延迟delay毫秒后执行，然后每隔period时间间隔执行一次；
+这两个方法与代码的实例都表示以固定的频率执行某一任务，区别在于:
+比如，如果任务是1秒钟后执行，然后每隔3秒执行一次，但是当资源调度紧张时，示例中的代码可能会在1秒钟执行后，导致4秒钟后
+才执行下一次；但是scheduleAtFixedRate方法，如果因为任务繁忙，1秒钟后执行一次任务后，3.5秒后才开始执行下一次任务，
+此时java会记下这个延迟0.5秒，会让下载任务在2.5秒后就执行。
+
+定时器的终止：
+默认情况下，如果一个程序的timer还在执行，那么这个程序就会一直在运行，那么怎么才能终止这个timer定时器呢？
+终止一个定时器主要有一下三种方法：
+1） 调用timer.cancel()方法，可以在程序的任何地方调用此方法，甚至可以在TimerTask的run方法里使用此方法；
+
+2） 让timer定时器成为一个守护进程，这样当程序只有守护进程存在时，守护进程就会停止运行，程序自然也会停止，而让timer
+    成为一个守护进程的方法是使用Timer的timer(true)构造方法；
+
+3） 调用System.exit(int arg0)方法，这样程序停止，timer自然停止。
+
+当程序的timer在运行时，程序就会保持运行，但是当timer中的所有TimerTask运行完了，整个程序会结束吗，答案是否定的，
+比如timer.shedule(task,5000)，那么在5秒之后，其实真个程序还没有退出，timer会等待垃圾回收后，然后程序才会得以退出，
+具体的参照http://www.douban.com/note/64661564/；所以在TimerTask的run函数执行完毕之后加上System.gc()就可以了。
+
+
