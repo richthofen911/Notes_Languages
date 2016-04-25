@@ -1,0 +1,26 @@
+作用 blocks 可用于
+  1. to implement callbacks 
+  2. to pass around chunks of code
+  3. to implement iterators.
+        例:  animals = %w( ant bee cat dog )
+             # create an array
+             animals.each {|animal| puts animal }
+
+形式1
+{ puts "hello"}
+
+形式2
+do
+  club.enroll(person)
+  person.socialize
+end
+
+带参数
+def who_says_what
+  yield("Dave", "hello")
+  yield("Andy", "goodbye")
+end
+who_says_what {|person, phrase| puts "#{person} says #{phrase}"}
+
+两种形式区别 the braces bind more tightly than the do / end pairs
+braces for single-line blocks and do / end for multiline blocks
