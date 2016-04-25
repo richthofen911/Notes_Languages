@@ -1,0 +1,4 @@
+-creating arrays of words
+  a = %w{ ant bee cat dog elk }
+  
+  
