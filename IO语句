@@ -1,0 +1,19 @@
+输出
+puts  常用， 自动输出/n
+
+p   如果遇到nil也会输出，例如输出a[index]时，如果用puts会输出空白，p会输出nil
+
+print 不自动输出/n
+
+
+--------------------------
+输入
+基本line = gets   // gets returns nil when it reaches the end of input
+print line
+
+Command-Line Arguments
+puts "You gave #{ARGV.size} arguments"
+p ARGV
+输出结果
+You gave 4 arguments
+["ant", "bee", "cat", "dog"]
