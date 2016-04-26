@@ -1,0 +1,9 @@
+::Arrays
+  you can treat arrays as 
+    stacks, .pop, .push
+    queues,  .push, .shift
+    dequeues
+    sets
+    
+    array.first(4) 返回前四个元素
+    array.last(4)
