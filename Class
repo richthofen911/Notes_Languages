@@ -29,4 +29,12 @@ puts "Price in cents = #{book.price_in_cents}"
 
 具有赋值功能的方法命名为 ***=()， 方法内要用@attr， 输出型的方法内，attr不需要@
 
+Access Control
+方法1, 分类声明， public 以下的方法全是public， protected以下的 。。。。。
+方法2： 在class尾部总结
+public :method1, :method3
+protected :method2
+private :method4
+这样
+
 
