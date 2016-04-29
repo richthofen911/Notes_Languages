@@ -1,0 +1,35 @@
+SELECT [DISTINCT value不重复的记录] column1, column2 
+FROM table_name 
+Wildcards:
+  %           	A substitute for zero or more characters
+  _	            A substitute for a single character
+ [charlist]	    Sets and ranges of characters to match
+ [^charlist]or[!charlist]   Matches only a character NOT specified within the brackets
+
+[WHERE column1 operator value [AND/OR condition2]]
+[ORDER BY column1 ASC|DESC, column2 ASC|DESC];
+  
+  operators:
+    =         equal
+    <>        not equal(in some versio of SQL use !=
+    >
+    >=
+    <
+    <=
+    BETWEEN   between an inclusive range, such as "WHERE Price BETWEEN 10 AND 20"
+    LIKE      search for a pattern. e.g.  http://www.w3schools.com/sql/trysql.asp?filename=trysql_select_like_pattern
+    IN        to specify multiple possible values for a column， 等价与多个同key条件句之间加OR
+                eg. http://www.w3schools.com/sql/trysql.asp?filename=trysql_select_in
+                                                                      
+
+INSERT INTO table_name (column1,column2,column3,...)
+VALUES (value1,value2,value3,...);
+
+UPDATE table_name                           example: UPDATE Customers
+SET column1=value1,column2=value2,...                SET ContactName='Alfred Schmidt', City='Hamburg'
+WHERE some_column=some_value;                        WHERE CustomerName='Alfreds Futterkiste';
+
+DELETE FROM table_name
+[WHERE some_column=some_value]; 不加条件则删除所有记录
+
+
