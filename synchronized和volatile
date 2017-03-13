@@ -1,3 +1,6 @@
+::synchronized的详细使用说明
+  http://blog.csdn.net/luoweifu/article/details/46613015
+
 http://www.cnblogs.com/dolphin0520/p/3920373.html
 在Java 5Java 5之前，'volatile'是一个备受争议的关键字，因为在程序中使用它往往会导致出人意料的结果。在Java 5之后，它
 才得以重获生机。volatile关键字虽然从字面上理解起来比较简单，但是要用好不是一件容易的事情。由于volatile关键字是与Java
