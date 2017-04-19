@@ -5,3 +5,33 @@
 的结果强制类型转换为期望的类型
 
 http://www.cnblogs.com/yinhaiming/articles/1749738.html
+
+推荐的命名约定是使用大写的单个字母名称作为类型参数。这与C++ 约定有所不同（参阅附录 A：与 C++ 模板的比较）
+对于常见的泛型模式，推荐的名称是： 
+ K —— 键，比如映射的键。 
+ V —— 值，比如 List 和 Set 的内容，或者 Map 中的值。 
+ E —— 异常类。 
+ T —— 泛型。 
+ 
+ Java中泛型不是协变的， 例如，List<Object>不是List<String>的父类型。 
+ 
+**什么时候用? 什么时候用T
+  T 是类型参数，? 是无界通配符。 以 List<T> 和 List<?> 为例，主要区别在于
+  T 主要用于 "声明" 泛型类或泛型方法
+  ? 主要用于 "使用" 泛型类或泛型方法，例如
+      public Class Fruit(){}
+      public Class Apple extends Fruit(){}
+      public void test(? extends Fruit){}; // 这里就属于使用，所以用?而不是T
+      test(new Fruit());
+      test(new Apple());
+      test(new String()); //这个就会报错
+
+作者：zane zhou
+链接：https://www.zhihu.com/question/31429113/answer/51906707
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+ 
+ 泛型中也存在 extends和super的用法，例如
+<? extends T> 表示类型的上界，表示参数化的类型可能是T或T的子类
+<? super T>表示类型的下界，表示参数化类型是此类型的超类(父类)，直至Object
+http://www.cnblogs.com/sharewind/archive/2012/11/26/2788698.html
